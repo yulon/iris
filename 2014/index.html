@@ -2,22 +2,66 @@
 
 <head>
 <meta charset="utf-8">
+<style>
+	body {
+		background-color: #E5E5E5;
+		text-align: center;
+	}
+	#cav {
+		background-color: #FFFFFF;
+		box-shadow: 0px 5px 50px rgba(0, 0, 0, 0.8);
+	}
+</style>
 <script src="rainbow.js"></script>
 </head>
 
 <body>
-	<canvas id="cav" width="800" height="600"></canvas>
+	<canvas id="cav" width="700" height="600"></canvas>
 	<script>
 		var cav = document.getElementById("cav");
 		var ctx = cav.getContext("2d");
-		
-		var rb = new Rainbow(50);
-		var prc = mkRGB(255, 0, 255);
+		var rb = new Rainbow();
 
-		ctx.fillStyle = '#FF00FF';
-		ctx.fillRect(110, 0, cav.width, 600);
+		var flr = new Array(4);
+		for (var i = 0; i < flr.length; i++) {
+			flr[i] = {img: new Image()};
+			flr[i].img.src = i + ".png";
+			switch(i){
+				case 0:
+					flr[i].alpha = 0;
+					break;
+				case 1:
+					flr[i].alpha = 100;
+					break;
+				case 2:
+					flr[i].alpha = 155;
+					break;
+				case 3:
+					flr[i].alpha = 255;
+			}
+		};
+		var flri = 0;
 
-		rb.blendFromCavctx(ctx, prc);
+		cav.addEventListener("click", function(){
+			if (flri < 3) {
+				flri++;
+			} else{
+				console.log(1);
+			};
+		})
+
+		setInterval(function(){
+
+
+			/////////////////////////////
+			ctx.clearRect(0, 0, cav.width, cav.height);
+			ctx.drawImage(flr[flri].img, 0, 0);
+			var id = ctx.getImageData(0, 0, cav.width, cav.height);
+			rb.blend(id, flr[flri].alpha);
+			ctx.putImageData(id, 0, 0);
+			rb.upStartColor(5);
+		}, 50);
+
 
 	</script>
 </body>
