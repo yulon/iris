@@ -18,7 +18,7 @@
 
 <body>
 	<canvas id="cav" width="700" height="600"></canvas>
-	<p id="info"></p>
+	<p id="info">加载ING。。。</p>
 	<script>
 		var cav = document.getElementById("cav");
 		var ctx = cav.getContext("2d");
@@ -28,7 +28,12 @@
 		var flr = new Array(4);
 		for (var i = 0; i < flr.length; i++) {
 			flr[i] = {img: new Image()};
+
 			flr[i].img.src = i + ".png";
+			flr[i].img.onload = function() {
+				main();
+			};
+
 			switch(i){
 				case 0:
 					flr[i].alpha = 0;
@@ -41,47 +46,53 @@
 					break;
 				case 3:
 					flr[i].alpha = 255;
-			}
+					
+			};
 		};
-		
+
 		var flri = 0;
 		var text = false;
+		var flrLoadNum = 0;
 
-		flr[3].img.onload = function() {
-			info.innerHTML = "屠龙宝刀点击就送！！！";
-			cav.style.cursor = "pointer";
+		function main() {
+			flrLoadNum++;
+			if(flrLoadNum == 4){
+				info.innerHTML = "屠龙宝刀点击就送！！！";
+				cav.style.cursor = "pointer";
 
-			cav.addEventListener("click", function(){
-				if (flri < 3) {
-					flri++;
-					var zai = "";
-					for (var i = 0; i < flri; i++) {
-						zai+="再"
+				cav.addEventListener("click", function(){
+					if (flri < 3) {
+						flri++;
+						var zai = "";
+						for (var i = 0; i < flri; i++) {
+							zai+="再"
+						};
+						info.innerHTML = zai+"点！！！";
+					}else if(text == false){
+						text = true;
+						cav.style.cursor = null;
+						info.innerHTML = "_(:3」∠)_";
 					};
-					info.innerHTML = zai+"点！！！";
-				}else if(text == false){
-					text = true;
-					cav.style.cursor = null;
-					info.innerHTML = "_(:3」∠)_";
-				};
-			})
+				})
 
-			setInterval(function(){
+				setInterval(function(){
 
-				ctx.clearRect(0, 0, cav.width, cav.height);
-				ctx.drawImage(flr[flri].img, 0, 0);
-				var id = ctx.getImageData(0, 0, cav.width, cav.height);
-				rb.blend(id, flr[flri].alpha);
-				ctx.putImageData(id, 0, 0);
-				rb.upStartColor(3);
+					ctx.clearRect(0, 0, cav.width, cav.height);
+					ctx.drawImage(flr[flri].img, 0, 0);
+					var id = ctx.getImageData(0, 0, cav.width, cav.height);
+					rb.blend(id, flr[flri].alpha);
+					ctx.putImageData(id, 0, 0);
+					rb.upStartColor(3);
 
-				if (text) {
-					//1
-				};
+					if (text) {
+						//1
+					};
 
-			}, 1000/24);
-		};
+				}, 1000/24);
+			}
+		}
 
+		
 	</script>
 </body>
 
