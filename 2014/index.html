@@ -11,7 +11,6 @@
 	#cav {
 		background-color: #FFFFFF;
 		box-shadow: 0px 5px 50px rgba(0, 0, 0, 0.8);
-		cursor: pointer;
 	}
 </style>
 <script src="rainbow.js"></script>
@@ -44,12 +43,14 @@
 					flr[i].alpha = 255;
 			}
 		};
+		
 		var flri = 0;
 		var text = false;
 
-		flr[0].img.onload = function() {
+		flr[3].img.onload = function() {
 			info.innerHTML = "屠龙宝刀点击就送！！！";
-			
+			cav.style.cursor = "pointer";
+
 			cav.addEventListener("click", function(){
 				if (flri < 3) {
 					flri++;
@@ -60,7 +61,7 @@
 					info.innerHTML = zai+"点！！！";
 				}else if(text == false){
 					text = true;
-					cav.style.cursor = "auto";
+					cav.style.cursor = null;
 					info.innerHTML = "_(:3」∠)_";
 				};
 			})
@@ -80,9 +81,6 @@
 
 			}, 1000/24);
 		};
-		
-		
-
 
 	</script>
 </body>
