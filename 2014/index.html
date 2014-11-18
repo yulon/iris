@@ -68,7 +68,7 @@
 				var text = new Object();
 				text.ok = false;
 
-				info.innerHTML = "屠龙宝刀点击就送！！！";
+				info.innerHTML = "屠龙宝刀，点击就送！！！";
 				cav.style.cursor = "pointer";
 
 				cav.addEventListener("click", function(){
@@ -89,7 +89,7 @@
 						text.upInfo = function(){
 							if(text.info.length < mlang.happyBirthday.length){
 								text.info.push({
-									y: Math.random()*(cav.height-30), 
+									y: Math.random()*(cav.height-30) + 30, 
 									c: "rgba("+text.rb.startColor[0]+","+text.rb.startColor[1]+","+text.rb.startColor[2]
 								});
 								var i = text.info.length-1;
