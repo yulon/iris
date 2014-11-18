@@ -17,19 +17,19 @@ function Rainbow () {
 					imageData.data[i+2]=a*cColor[2] + (1-a)*imageData.data[i+2]
 				};
 			};
-			upColor(cColor);
+			upColor(cColor, 2);
 		};
 	};
 
 	this.upStartColor = function(n) {
 		for (var i = 0; i < n; i++) {
-			upColor(rbColor);
+			upColor(rbColor, n);
 		};
 	};
 
 }
 
-function upColor (preUpdateColor) {
+function upColor (preUpdateColor, n) {
 	var next, last;
 	for (var i = 0; i < 3; i++) {
 		if(preUpdateColor[i]==255){
@@ -48,12 +48,12 @@ function upColor (preUpdateColor) {
 			}
 
 			if (preUpdateColor[last]>0) {
-				preUpdateColor[last]=preUpdateColor[last]-2;
+				preUpdateColor[last]=preUpdateColor[last]-n;
 			} else {
 				if (preUpdateColor[next]==255) {
-					preUpdateColor[i]=preUpdateColor[i]-2;
+					preUpdateColor[i]=preUpdateColor[i]-n;
 				}else{
-					preUpdateColor[next]=preUpdateColor[next]+2;
+					preUpdateColor[next]=preUpdateColor[next]+n;
 				};
 			};
 			return;

@@ -6,10 +6,12 @@
 	body {
 		background-color: #E5E5E5;
 		text-align: center;
+		font-family: "Segoe UI","Lucida Grande",Helvetica,Arial,"Microsoft YaHei",FreeSans,Arimo,"Droid Sans","wenquanyi micro hei","Hiragino Sans GB","Hiragino Sans GB W3",sans-serif;
 	}
 	#cav {
 		background-color: #FFFFFF;
 		box-shadow: 0px 5px 50px rgba(0, 0, 0, 0.8);
+		cursor: pointer;
 	}
 </style>
 <script src="rainbow.js"></script>
@@ -17,9 +19,11 @@
 
 <body>
 	<canvas id="cav" width="700" height="600"></canvas>
+	<p id="info">屠龙宝刀点击就送！！！</p>
 	<script>
 		var cav = document.getElementById("cav");
 		var ctx = cav.getContext("2d");
+		var info = document.getElementById("info");
 		var rb = new Rainbow();
 
 		var flr = new Array(4);
@@ -31,36 +35,47 @@
 					flr[i].alpha = 0;
 					break;
 				case 1:
-					flr[i].alpha = 100;
+					flr[i].alpha = 50;
 					break;
 				case 2:
-					flr[i].alpha = 155;
+					flr[i].alpha = 100;
 					break;
 				case 3:
 					flr[i].alpha = 255;
 			}
 		};
 		var flri = 0;
+		var text = false;
 
 		cav.addEventListener("click", function(){
 			if (flri < 3) {
 				flri++;
-			} else{
-				console.log(1);
+				var zai = "";
+				for (var i = 0; i < flri; i++) {
+					zai+="再"
+				};
+				info.innerHTML = zai+"点！！！"
+			}else if(text == false){
+				text = true;
+				cav.style.cursor = "auto";
+				info.innerHTML = "_(:3」∠)_";
 			};
 		})
 
 		setInterval(function(){
 
-
-			/////////////////////////////
 			ctx.clearRect(0, 0, cav.width, cav.height);
 			ctx.drawImage(flr[flri].img, 0, 0);
 			var id = ctx.getImageData(0, 0, cav.width, cav.height);
 			rb.blend(id, flr[flri].alpha);
 			ctx.putImageData(id, 0, 0);
-			rb.upStartColor(5);
-		}, 50);
+			rb.upStartColor(3);
+
+			if (text) {
+				//1
+			};
+
+		}, 1000/24);
 
 
 	</script>
