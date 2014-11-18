@@ -19,7 +19,7 @@
 
 <body>
 	<canvas id="cav" width="700" height="600"></canvas>
-	<p id="info">屠龙宝刀点击就送！！！</p>
+	<p id="info"></p>
 	<script>
 		var cav = document.getElementById("cav");
 		var ctx = cav.getContext("2d");
@@ -47,35 +47,41 @@
 		var flri = 0;
 		var text = false;
 
-		cav.addEventListener("click", function(){
-			if (flri < 3) {
-				flri++;
-				var zai = "";
-				for (var i = 0; i < flri; i++) {
-					zai+="再"
+		flr[0].img.onload = function() {
+			info.innerHTML = "屠龙宝刀点击就送！！！";
+			
+			cav.addEventListener("click", function(){
+				if (flri < 3) {
+					flri++;
+					var zai = "";
+					for (var i = 0; i < flri; i++) {
+						zai+="再"
+					};
+					info.innerHTML = zai+"点！！！";
+				}else if(text == false){
+					text = true;
+					cav.style.cursor = "auto";
+					info.innerHTML = "_(:3」∠)_";
 				};
-				info.innerHTML = zai+"点！！！"
-			}else if(text == false){
-				text = true;
-				cav.style.cursor = "auto";
-				info.innerHTML = "_(:3」∠)_";
-			};
-		})
+			})
 
-		setInterval(function(){
+			setInterval(function(){
 
-			ctx.clearRect(0, 0, cav.width, cav.height);
-			ctx.drawImage(flr[flri].img, 0, 0);
-			var id = ctx.getImageData(0, 0, cav.width, cav.height);
-			rb.blend(id, flr[flri].alpha);
-			ctx.putImageData(id, 0, 0);
-			rb.upStartColor(3);
+				ctx.clearRect(0, 0, cav.width, cav.height);
+				ctx.drawImage(flr[flri].img, 0, 0);
+				var id = ctx.getImageData(0, 0, cav.width, cav.height);
+				rb.blend(id, flr[flri].alpha);
+				ctx.putImageData(id, 0, 0);
+				rb.upStartColor(3);
 
-			if (text) {
-				//1
-			};
+				if (text) {
+					//1
+				};
 
-		}, 1000/24);
+			}, 1000/24);
+		};
+		
+		
 
 
 	</script>
