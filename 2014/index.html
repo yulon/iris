@@ -12,20 +12,23 @@
 		background-color: #FFFFFF;
 		box-shadow: 0px 5px 50px rgba(0, 0, 0, 0.8);
 	}
+	#info{
+		margin: 0;
+	}
 </style>
 <script src="rainbow.js"></script>
+<script src="mlang.js"></script>
 </head>
 
 <body>
 	<canvas id="cav" width="700" height="600"></canvas>
 	<p id="info">加载ING。。。</p>
 	<script>
-		var cav = document.getElementById("cav");
-		var ctx = cav.getContext("2d");
-		var info = document.getElementById("info");
-		var rb = new Rainbow();
 
 		var flr = new Array(4);
+		var flrLoadNum = 0;
+		var flri = 0;
+
 		for (var i = 0; i < flr.length; i++) {
 			flr[i] = {img: new Image()};
 
@@ -50,13 +53,21 @@
 			};
 		};
 
-		var flri = 0;
-		var text = false;
-		var flrLoadNum = 0;
-
 		function main() {
 			flrLoadNum++;
 			if(flrLoadNum == 4){
+				var cav = document.getElementById("cav");
+				var ctx = cav.getContext("2d");
+				ctx.font = "Bold 30px 'Segoe UI' 'Lucida Grande' Helvetica Arial 'Microsoft YaHei' FreeSans Arimo 'Droid Sans' 'wenquanyi micro hei' 'Hiragino Sans GB' 'Hiragino Sans GB W3' sans-serif";
+				ctx.textAlign = "left";
+
+				var info = document.getElementById("info");
+
+				var rbbg = new Rainbow();
+
+				var text = new Object();
+				text.ok = false;
+
 				info.innerHTML = "屠龙宝刀点击就送！！！";
 				cav.style.cursor = "pointer";
 
@@ -68,31 +79,61 @@
 							zai+="再"
 						};
 						info.innerHTML = zai+"点！！！";
-					}else if(text == false){
-						text = true;
+					}else if(text.ok == false){
+						text.ok = true;
+
+						text.rb = new Rainbow();
+						text.rb.startColor = mkColor(2014, 11, 0);
+
+						text.info = new Array();
+						text.upInfo = function(){
+							if(text.info.length < mlang.happyBirthday.length){
+								text.info.push({
+									y: Math.random()*(cav.height-30), 
+									c: "rgba("+text.rb.startColor[0]+","+text.rb.startColor[1]+","+text.rb.startColor[2]
+								});
+								var i = text.info.length-1;
+								text.info[i].x = Math.random()*(cav.width-ctx.measureText(mlang.happyBirthday[i]).width);
+								text.rb.upStartColor(19);
+							};
+						};
+						text.upInfo();
+						setInterval(text.upInfo, 2000);
+
 						cav.style.cursor = null;
 						info.innerHTML = "_(:3」∠)_";
 					};
 				})
 
 				setInterval(function(){
-
 					ctx.clearRect(0, 0, cav.width, cav.height);
 					ctx.drawImage(flr[flri].img, 0, 0);
-					var id = ctx.getImageData(0, 0, cav.width, cav.height);
-					rb.blend(id, flr[flri].alpha);
-					ctx.putImageData(id, 0, 0);
-					rb.upStartColor(3);
 
-					if (text) {
-						//1
+					var id = ctx.getImageData(0, 0, cav.width, cav.height);
+					rbbg.blend(id, flr[flri].alpha);
+					ctx.putImageData(id, 0, 0);
+
+					if (text.ok == true) {
+						ctx.shadowBlur = 10;
+						var o = 0;
+						
+						if (text.info.length>5) {
+							o = text.info.length - 5;
+						};
+
+						for (var i = o; i < text.info.length; i++) {
+							ctx.shadowColor = text.info[i].c + ", 0.5)";
+							ctx.fillStyle = text.info[i].c + ", 1)";
+							ctx.fillText(mlang.happyBirthday[i], text.info[i].x, text.info[i].y);
+						};
+
+						ctx.shadowBlur = 0;
 					};
 
+					rbbg.upStartColor(3);
 				}, 1000/24);
 			}
 		}
-
-		
 	</script>
 </body>
 

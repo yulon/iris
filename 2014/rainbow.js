@@ -1,10 +1,10 @@
 function Rainbow () {
 
-	var rbColor = mkColor(255, 0, 0);
+	this.startColor = mkColor(255, 0, 0);
 	var rbThis = this;
 
 	this.blend = function(imageData, alpha){
-		var cColor = mkColor(rbColor[0], rbColor[1], rbColor[2]);
+		var cColor = mkColor(rbThis.startColor[0], rbThis.startColor[1], rbThis.startColor[2]);
 		var a = alpha/255;
 		var pWidth = imageData.width*4;
 		var i;
@@ -23,7 +23,7 @@ function Rainbow () {
 
 	this.upStartColor = function(n) {
 		for (var i = 0; i < n; i++) {
-			upColor(rbColor, n);
+			upColor(rbThis.startColor, n);
 		};
 	};
 
