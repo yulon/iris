@@ -1,0 +1,74 @@
+
+<title>WebGL简单文本绘制 - www.web-tinker.com</title>
+
+<canvas id="canvas"></canvas>
+<script type="text/plain" id="vSource">
+attribute vec3 position;
+uniform mat4 mMatrix;
+uniform mat4 pMatrix;
+varying vec3 vPosition;
+void main(){
+  gl_Position=pMatrix*mMatrix*vec4(position,1.0);
+  vPosition=position;
+}
+</script>
+<script type="text/plain" id="fSource">
+precision lowp float;
+varying vec3 vPosition;
+uniform sampler2D texture;
+void main(){
+  gl_FragColor=texture2D(texture,vec2(vPosition.x*0.5+0.5,0.5-vPosition.y));
+}
+</script>
+<script src="SimpleWebGL.2.0.js"></script>
+<script src="SimpleWebGL.Matrix.1.0.js"></script>
+<script>
+//计算满屏显示
+
+//使用SimpleWebGL
+new SimpleWebGL(canvas).namespace(function(){
+  eval(this.EXTRACT);
+  /*贴图数据*/
+  //创建Canvas，并设置大小
+  var text=document.createElement("canvas");
+  text.width=512,text.height=256;
+  //对其绘制文字
+  (function(g){
+    //设置文字属性
+    g.textBaseline="middle",g.textAlign="center";
+    g.font="128px 楷体",g.fontStyle="rgba(0,0,0,0.3)";
+    //设置文字渐变
+　  g.fillStyle=g.createLinearGradient(0,0,text.width,0);
+　  g.fillStyle.addColorStop(0,"rgba(255,255,0,0.5)");
+　  g.fillStyle.addColorStop(0.5,"rgba(0,255,255,0.5)");
+　  g.fillStyle.addColorStop(1,"rgba(255,0,255,0.5)");
+    //绘制文字
+    g.fillText("次碳酸钴",256,128);
+  })(text.getContext("2d"));
+  //放入Texture2D对象
+  new Texture2D(text,"RGBA").bind(1);
+  /*顶点数据*/
+  //做出一个点阵型的长方体，用来往上面贴图
+  var position=[];
+  (function(){
+    var i,j,w=1<<7,h=1<<6,k=Math.max(w,h);
+    for(i=-w;i<=w;i++)for(j=-h;j<=h;j++)
+      position.push(i/k,j/k,0.1, i/k,j/k,-0.1);
+  })();
+  /*创建着色程序*/
+  var program=new Program(
+    new VertexShader(vSource),new FragmentShader(fSource)
+  ).link().use().data({
+    pMatrix:Matrix.projection(37,canvas.width/canvas.height,0.1,100),
+    position:new ArrayBuffer(position),texture:1
+  });
+  /*设置绘制属性并绘制*/
+  this.setting("BLEND",["SRC_ALPHA","ONE"]).color(0,0,0,1).play(function(time){
+    this.clear("COLOR");
+    //使用线条作为图元来绘制所有顶点
+    program.data({
+      mMatrix:Matrix.model([0,0,-1.5],time/2-45) //处理模型矩阵
+    }).draw(position.length/3,"LINES"); //调用绘制
+  });
+});
+</script>
