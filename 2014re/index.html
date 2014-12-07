@@ -1,95 +1,143 @@
+<!DOCTYPE html>
 <html>
+	<head>
+		<meta charset="UTF-8">
 
-<head>
-<meta charset="utf-8">
-<style>
-	body {
-		background-color: #E5E5E5;
-		text-align: center;
-		font-family: "Segoe UI","Lucida Grande",Helvetica,Arial,"Microsoft YaHei",FreeSans,Arimo,"Droid Sans","wenquanyi micro hei","Hiragino Sans GB","Hiragino Sans GB W3",sans-serif;
-	}
-	#canvas {
-		background-color: #000000;
-		box-shadow: 0px 5px 50px rgba(0, 0, 0, 0.8);
-	}
+		<!--引入Three.js-->
+		<script src="three.min.js"></script>
+		<script type="text/javascript">
+			//开启Three.js渲染器
+			var renderer;//声明全局变量（对象）
+			function initThree() {
+				cavDiv = document.getElementById('canvas3d');
+				width = cavDiv.clientWidth;//获取画布「canvas3d」的宽
+				height = cavDiv.clientHeight;//获取画布「canvas3d」的高
+				renderer = new THREE.WebGLRenderer({antialias:true});//生成渲染器对象（属性：抗锯齿效果为设置有效）
+				renderer.setSize(width, height );//指定渲染器的高宽（和画布框大小一致）
+				cavDiv.appendChild(renderer.domElement);//追加 【canvas】 元素到 【canvas3d】 元素中。
+				renderer.setClearColorHex(0x000000, 0.0);//设置canvas背景色(clearColor)
+			}
+			//设置相机
+			var camera;
+			function initCamera() {
+				camera = new THREE.PerspectiveCamera( 45, width / height , 1 , 5000 );//设置透视投影的相机,默认情况下相机的上方向为Y轴，右方向为X轴，沿着Z轴朝里（视野角：fov 纵横比：aspect 相机离视体积最近的距离：near 相机离视体积最远的距离：far）
+				camera.position.x = 0;//设置相机的位置坐标
+				camera.position.y = 0;//设置相机的位置坐标
+				camera.position.z = 500;//设置相机的位置坐标
+				camera.up.x = 0;//设置相机的上为「x」轴方向
+				camera.up.y = 0;//设置相机的上为「y」轴方向
+				camera.up.z = 0;//设置相机的上为「z」轴方向
+				camera.lookAt( {x:0, y:0, z:0 } );//设置视野的中心坐标
+			}
+			//设置场景
+			var scene;
+			function initScene() {	 
+				scene = new THREE.Scene();
+			}
 
-</style>
+			//设置光源
+			var light;
+			function initLight() { 
+				light = new THREE.DirectionalLight(0xff0000, 1.0, 0);//设置平行光源
+				light.position.set( 200, 200, 200 );//设置光源向量
+				scene.add(light);// 追加光源到场景
+			}
+			//设置物体
+			var texts = new Array();
 
-</head>
+			var cache = document.createElement("canvas");
 
-<body>
-	<canvas id="canvas" width="700" height="600"></canvas>
+			var cacheCxt = cache.getContext("2d");
+			var ft = "Bold 50px 'Segoe UI' 'Lucida Grande' Helvetica Arial 'Microsoft YaHei' FreeSans Arimo 'Droid Sans' 'wenquanyi micro hei' 'Hiragino Sans GB' 'Hiragino Sans GB W3' sans-serif";
+			var tc = "rgba(255,255,255,1)";
 
-	<script type="text/plain" id="vSource">
-		attribute vec3 position;
-		uniform mat4 mMatrix;
-		uniform mat4 pMatrix;
-		varying vec3 vPosition;
-		void main(){
-			gl_Position=pMatrix*mMatrix*vec4(position,1.0);
-			vPosition=position;
-		}
-	</script>
-	<script type="text/plain" id="fSource">
-		precision lowp float;
-		varying vec3 vPosition;
-		uniform sampler2D texture;
-		void main(){
-			gl_FragColor=texture2D(texture, vec2(vPosition.x*0.5+0.5,0.5-vPosition.y));
-		}
-	</script>
+			function addText (txt, z) {
+				cacheCxt.font = ft;
+				cacheCxt.fillStyle = tc;
+				cache.width = cacheCxt.measureText(txt).width;
+				cache.height = 55;
+				cacheCxt.font = ft;
+				cacheCxt.fillStyle = tc;
+				cacheCxt.clearRect(0, 0, cache.width, cache.height);
+				cacheCxt.fillText(txt, 0, 50);
 
-	<script src="SimpleWebGL.2.0.js"></script>
-	<script src="SimpleWebGL.Matrix.1.0.js"></script>
-	<script>
-		//var canvas = document.getElementById("cav");
-		//使用SimpleWebGL
-		new SimpleWebGL(canvas).namespace(function(){
-			eval(this.EXTRACT);
-			/*贴图数据*/
-			//创建Canvas，并设置大小
-			var text = document.createElement("canvas");
-			text.width = 512;
-			text.height = 256;
-			//对其绘制文字
-			var textcxt = text.getContext("2d");
+				var te = new THREE.Texture(cache) 
+				te.needsUpdate = true;
+				var ml = new THREE.MeshBasicMaterial( {map: te, side:THREE.DoubleSide } );
+				ml.transparent = true;
 
-				//设置文字属性
-			textcxt.textBaseline="middle";
-			textcxt.textAlign="center";
-			textcxt.font = "Bold 30px 'Segoe UI' 'Lucida Grande' Helvetica Arial 'Microsoft YaHei' FreeSans Arimo 'Droid Sans' 'wenquanyi micro hei' 'Hiragino Sans GB' 'Hiragino Sans GB W3' sans-serif";
-			textcxt.fillStyle="#FFFFFF"
-			textcxt.fillText("咿呀咿呀哟", 256, 128);
+				var text = {
+					sp: new THREE.Mesh(new THREE.PlaneGeometry(cache.width, cache.height), ml),
+					x: Math.random()*500-250,
+					y: Math.random()*500-250,
+				};
 
-			//放入Texture2D对象
-			new Texture2D(text,"RGBA").bind(1);
-			/*顶点数据*/
-			//做出一个点阵型的长方体，用来往上面贴图
-			var position=[];
-			(function(){
-				var i,j,w=1<<7,h=1<<6,k=900;
-				for(i=-w;i<=w;i++)for(j=-h;j<=h;j++)
-					position.push(i/k, j/k, 0.01, i/k, j/k, -0.01);
-			})();
-			/*创建着色程序*/
-			var program=new Program(
-				new VertexShader(vSource),new FragmentShader(fSource)
-			).link().use().data({
-				pMatrix: Matrix.projection(45,canvas.width/canvas.height,0.1,100),
-				position: new ArrayBuffer(position),
-				texture: 1
-			});
-			/*设置绘制属性并绘制*/
-			this.setting("BLEND",["SRC_ALPHA","ONE"]).play(function(time){
-				this.clear("COLOR");
-				//使用线条作为图元来绘制所有顶点
-				program.data({
-					mMatrix:Matrix.model([0, 0, -1], time/2-45) //处理模型矩阵
-				}).draw(position.length/3, "LINES"); //调用绘制
-			});
-		});
+				text.sp.position.set(text.x, text.y, z);
+				scene.add(text.sp); texts.push(text);
+			}
 
-	</script>
-</body>
+			var bg;
 
+			function initObject(){
+				for (var i = 0; i < 14; i++) {
+					//addText("23"+i, -i*2000);
+				};
+
+				//camera.position.x = texts[0].x;
+				//camera.position.y = texts[0].y;
+
+				cache.width = iris.width;
+				cache.height = iris.height;
+				cacheCxt.clearRect(0, 0, cache.width, cache.height);
+				cacheCxt.drawImage(iris, 0, 0);
+				var te = new THREE.Texture(cache) 
+				te.needsUpdate = true;
+				var ml = new THREE.MeshBasicMaterial( {map: te, side:THREE.DoubleSide } );
+				ml.transparent = true;
+				bg = new THREE.Mesh(new THREE.PlaneGeometry(cache.width, cache.height), ml);
+				bg.position.set(0, 50, -200);
+				scene.add(bg);
+			}
+			
+			//执行
+			var iris = new Image();
+
+			function threeStart() {
+
+				iris.src = "iris2.png";
+
+				iris.onload = function(){
+					initThree();
+					initCamera();
+					initScene();
+					initLight();
+					initObject();
+					renderer.clear();
+					renderer.render(scene, camera);
+				};
+			}
+
+			
+
+		</script>
+		<style type="text/css">
+			body {
+				background-color: #E5E5E5;
+				font-family: "Segoe UI","Lucida Grande",Helvetica,Arial,"Microsoft YaHei",FreeSans,Arimo,"Droid Sans","wenquanyi micro hei","Hiragino Sans GB","Hiragino Sans GB W3",sans-serif;
+			}
+			#canvas3d{
+				border: none;
+				margin: auto;
+				width: 700px;
+				height: 600px;
+				box-shadow: 0px 5px 50px rgba(0, 0, 0, 0.8);
+				background-color: #000000;
+			}
+		</style>
+	</head>
+
+	<body onload='threeStart();'>
+		<!--盛放canvas的容器-->
+		<div id="canvas3d"></div>
+	</body>
 </html>
