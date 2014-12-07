@@ -5,13 +5,14 @@ j5.After = function(){
 
 	this.callback = function(){
 		this.num++;
+		var th1s = this;
 		return function(){
-			this.num--;
-			if (this.num == 0) {
-				if (this.lf) {
-					this.lf();
+			th1s.num--;
+			if (th1s.num == 0) {
+				if (th1s.lf) {
+					th1s.lf();
 				} else{
-					this.num = -1457;
+					th1s.num = -1457;
 				};
 			}
 		};

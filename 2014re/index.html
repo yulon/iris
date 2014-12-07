@@ -5,6 +5,7 @@
 
 		<!--引入Three.js-->
 		<script src="three.min.js"></script>
+		<script src="j5.js"></script>
 		<script type="text/javascript">
 			//开启Three.js渲染器
 			var renderer;//声明全局变量（对象）
@@ -15,7 +16,7 @@
 				renderer = new THREE.WebGLRenderer({antialias:true});//生成渲染器对象（属性：抗锯齿效果为设置有效）
 				renderer.setSize(width, height );//指定渲染器的高宽（和画布框大小一致）
 				cavDiv.appendChild(renderer.domElement);//追加 【canvas】 元素到 【canvas3d】 元素中。
-				renderer.setClearColorHex(0x000000, 0.0);//设置canvas背景色(clearColor)
+				//renderer.setClearColor(0x000000, 0.0);//设置canvas背景色(clearColor)
 			}
 			//设置相机
 			var camera;
@@ -23,7 +24,7 @@
 				camera = new THREE.PerspectiveCamera( 45, width / height , 1 , 5000 );//设置透视投影的相机,默认情况下相机的上方向为Y轴，右方向为X轴，沿着Z轴朝里（视野角：fov 纵横比：aspect 相机离视体积最近的距离：near 相机离视体积最远的距离：far）
 				camera.position.x = 0;//设置相机的位置坐标
 				camera.position.y = 0;//设置相机的位置坐标
-				camera.position.z = 500;//设置相机的位置坐标
+				camera.position.z = 1000;//设置相机的位置坐标
 				camera.up.x = 0;//设置相机的上为「x」轴方向
 				camera.up.y = 0;//设置相机的上为「y」轴方向
 				camera.up.z = 0;//设置相机的上为「z」轴方向
@@ -33,43 +34,52 @@
 			var scene;
 			function initScene() {	 
 				scene = new THREE.Scene();
+				scene.add( new THREE.AmbientLight( 0x000000 ) );
 			}
 
 			//设置光源
 			var light;
-			function initLight() { 
-				light = new THREE.DirectionalLight(0xff0000, 1.0, 0);//设置平行光源
-				light.position.set( 200, 200, 200 );//设置光源向量
-				scene.add(light);// 追加光源到场景
+			var light2;
+			function initLight() {
+				light = new THREE.PointLight(0xffffff, 2, 1000);
+				scene.add( light );
+				//light2 = new THREE.PointLight(0xff0000, 1, 600);
+				//scene.add( light2 );
+
 			}
+
+
 			//设置物体
 			var texts = new Array();
 
 			var cache = document.createElement("canvas");
 
 			var cacheCxt = cache.getContext("2d");
-			var ft = "Bold 50px 'Segoe UI' 'Lucida Grande' Helvetica Arial 'Microsoft YaHei' FreeSans Arimo 'Droid Sans' 'wenquanyi micro hei' 'Hiragino Sans GB' 'Hiragino Sans GB W3' sans-serif";
+			var ft = "Bold 72px 'Segoe UI' 'Lucida Grande' Helvetica Arial 'Microsoft YaHei' FreeSans Arimo 'Droid Sans' 'wenquanyi micro hei' 'Hiragino Sans GB' 'Hiragino Sans GB W3' sans-serif";
 			var tc = "rgba(255,255,255,1)";
 
 			function addText (txt, z) {
 				cacheCxt.font = ft;
 				cacheCxt.fillStyle = tc;
 				cache.width = cacheCxt.measureText(txt).width;
-				cache.height = 55;
+				cache.height = 72;
 				cacheCxt.font = ft;
 				cacheCxt.fillStyle = tc;
 				cacheCxt.clearRect(0, 0, cache.width, cache.height);
-				cacheCxt.fillText(txt, 0, 50);
+				cacheCxt.shadowBlur = 3;
+				cacheCxt.shadowColor = "rgba(43,87,151,0.5)"
+				cacheCxt.fillText(txt, 0, 62);
+				
 
 				var te = new THREE.Texture(cache) 
 				te.needsUpdate = true;
-				var ml = new THREE.MeshBasicMaterial( {map: te, side:THREE.DoubleSide } );
+				var ml = new THREE.MeshLambertMaterial( {map: te, side:THREE.DoubleSide } );
 				ml.transparent = true;
 
 				var text = {
 					sp: new THREE.Mesh(new THREE.PlaneGeometry(cache.width, cache.height), ml),
-					x: Math.random()*500-250,
-					y: Math.random()*500-250,
+					x: Math.random()*50-25,
+					y: Math.random()*50-25,
 				};
 
 				text.sp.position.set(text.x, text.y, z);
@@ -79,43 +89,62 @@
 			var bg;
 
 			function initObject(){
-				for (var i = 0; i < 14; i++) {
-					//addText("23"+i, -i*2000);
+				for (var i = 0; i < 15; i++) {
+					addText("2323423"+i, -i*2000);
 				};
 
-				//camera.position.x = texts[0].x;
-				//camera.position.y = texts[0].y;
+				camera.position.x = texts[0].x;
+				camera.position.y = texts[0].y;
 
-				cache.width = iris.width;
-				cache.height = iris.height;
-				cacheCxt.clearRect(0, 0, cache.width, cache.height);
-				cacheCxt.drawImage(iris, 0, 0);
-				var te = new THREE.Texture(cache) 
+				var bgCav = document.createElement("canvas");
+				var bgCavCxt = bgCav.getContext("2d");
+				bgCav.width = iris.width;
+				bgCav.height = iris.height;
+				bgCavCxt.clearRect(0, 0, bgCav.width, bgCav.height);
+				bgCavCxt.drawImage(iris, 0, 0);
+				var te = new THREE.Texture(bgCav);
 				te.needsUpdate = true;
 				var ml = new THREE.MeshBasicMaterial( {map: te, side:THREE.DoubleSide } );
 				ml.transparent = true;
-				bg = new THREE.Mesh(new THREE.PlaneGeometry(cache.width, cache.height), ml);
-				bg.position.set(0, 50, -200);
+				bg = new THREE.Mesh(new THREE.PlaneGeometry(bgCav.width, bgCav.height), ml);
 				scene.add(bg);
 			}
-			
+
+
 			//执行
-			var iris = new Image();
+			var after = new j5.After();
+			var iris = new Image(); iris.src = "iris2.png";
+			iris.onload = after.callback();
+			var lcsm = new Image(); lcsm.src = "legsCorgiStarMan.png";
+			lcsm.onload = after.callback();
 
 			function threeStart() {
-
-				iris.src = "iris2.png";
-
-				iris.onload = function(){
-					initThree();
-					initCamera();
-					initScene();
-					initLight();
+				initThree();
+				initCamera();
+				initScene();
+				initLight();
+				after.last(function(){
 					initObject();
-					renderer.clear();
-					renderer.render(scene, camera);
-				};
+
+					var dest = 0;
+					var spf = 1000/24;
+
+					var anm = setInterval(function(){
+						dest = parseInt(-(camera.position.z-1000)/2000);
+						if (dest<15) {
+							var seed = spf/((5800-dest*10)/2000);
+							camera.position.z -= seed;
+							light.position.set(camera.position.x, camera.position.y, camera.position.z);
+							//light2.position.set(texts[dest].x, texts[dest].y, -dest*2000+50);
+							//camera.lookAt({x:texts[dest].x, y:texts[dest].y, z:-dest*2000-500});
+							bg.position.set(camera.position.x, camera.position.y+50, camera.position.z-700);
+							
+							renderer.render(scene, camera);
+						} else{};
+					}, spf);
+				});
 			}
+			
 
 			
 
