@@ -32,69 +32,71 @@
 			}
 			//设置场景
 			var scene;
-			function initScene() {	 
+			function initScene() {
 				scene = new THREE.Scene();
-				scene.add( new THREE.AmbientLight( 0x000000 ) );
+				scene.add( new THREE.AmbientLight( 0x000000 ));
 			}
 
 			//设置光源
 			var light;
-			var light2;
+			var Light2;
 			function initLight() {
-				light = new THREE.PointLight(0xffffff, 2, 1000);
+				light = new THREE.PointLight(0xffffff, 2, 2000);
 				scene.add( light );
-				//light2 = new THREE.PointLight(0xff0000, 1, 600);
-				//scene.add( light2 );
-
+				light2 = new THREE.PointLight(0xffffff, 35, 0);
+				scene.add( light2 );
 			}
 
 
 			//设置物体
-			var texts = new Array();
+			var txts = new Array();
 
-			var cache = document.createElement("canvas");
+			var ccCav = document.createElement("canvas");
 
-			var cacheCxt = cache.getContext("2d");
+			var ccCavCxt = ccCav.getContext("2d");
 			var ft = "Bold 72px 'Segoe UI' 'Lucida Grande' Helvetica Arial 'Microsoft YaHei' FreeSans Arimo 'Droid Sans' 'wenquanyi micro hei' 'Hiragino Sans GB' 'Hiragino Sans GB W3' sans-serif";
 			var tc = "rgba(255,255,255,1)";
 
-			function addText (txt, z) {
-				cacheCxt.font = ft;
-				cacheCxt.fillStyle = tc;
-				cache.width = cacheCxt.measureText(txt).width;
-				cache.height = 72;
-				cacheCxt.font = ft;
-				cacheCxt.fillStyle = tc;
-				cacheCxt.clearRect(0, 0, cache.width, cache.height);
-				cacheCxt.shadowBlur = 3;
-				cacheCxt.shadowColor = "rgba(43,87,151,0.5)"
-				cacheCxt.fillText(txt, 0, 62);
-				
-
-				var te = new THREE.Texture(cache) 
-				te.needsUpdate = true;
-				var ml = new THREE.MeshLambertMaterial( {map: te, side:THREE.DoubleSide } );
-				ml.transparent = true;
-
-				var text = {
-					sp: new THREE.Mesh(new THREE.PlaneGeometry(cache.width, cache.height), ml),
-					x: Math.random()*50-25,
-					y: Math.random()*50-25,
-				};
-
-				text.sp.position.set(text.x, text.y, z);
-				scene.add(text.sp); texts.push(text);
-			}
-
+			var cc;
 			var bg;
-
 			function initObject(){
-				for (var i = 0; i < 15; i++) {
-					addText("2323423"+i, -i*2000);
+				ccCavCxt.font = ft;
+				ccCavCxt.fillStyle = tc;
+				ccCav.width = 1024;
+				ccCav.height = 72;
+				ccCavCxt.font = ft;
+				ccCavCxt.fillStyle = tc;
+				ccCavCxt.shadowBlur = 3;
+				ccCavCxt.shadowColor = "rgba(43,87,151,0.5)"
+
+				var ccTe = new THREE.Texture(ccCav) 
+				ccTe.needsUpdate = true;
+				var ccMl = new THREE.MeshLambertMaterial( {map: ccTe, side:THREE.DoubleSide } );
+				ccMl.transparent = true;
+				cc = new THREE.Mesh(new THREE.PlaneBufferGeometry(ccCav.width, ccCav.height), ccMl)
+
+				for (var i = 0; i < 16; i++) {
+					if (i==0) {
+						txts.push({
+							x: 0,
+							y: 0,
+							noSlow: true
+						});
+					}else{
+						txts.push({
+							x: Math.random()*2000-1000,
+							y: Math.random()*2000-1000,
+							noSlow: false
+						});
+					};
 				};
 
-				camera.position.x = texts[0].x;
-				camera.position.y = texts[0].y;
+				scene.add(cc);
+
+				//camera.position.x = txts[0].x;
+				//camera.position.y = txts[0].y;
+
+				//==================================================
 
 				var bgCav = document.createElement("canvas");
 				var bgCavCxt = bgCav.getContext("2d");
@@ -102,14 +104,32 @@
 				bgCav.height = iris.height;
 				bgCavCxt.clearRect(0, 0, bgCav.width, bgCav.height);
 				bgCavCxt.drawImage(iris, 0, 0);
-				var te = new THREE.Texture(bgCav);
-				te.needsUpdate = true;
-				var ml = new THREE.MeshBasicMaterial( {map: te, side:THREE.DoubleSide } );
-				ml.transparent = true;
-				bg = new THREE.Mesh(new THREE.PlaneGeometry(bgCav.width, bgCav.height), ml);
-				scene.add(bg);
-			}
+				var bgTe = new THREE.Texture(bgCav);
+				bgTe.needsUpdate = true;
 
+				var bgMl = new THREE.MeshLambertMaterial( {map: bgTe, side:THREE.DoubleSide } );
+				bgMl.transparent = true;
+				bg = new THREE.Mesh(new THREE.PlaneBufferGeometry(bgCav.width, bgCav.height), bgMl);
+				scene.add(bg);
+				bg.scale.set(3,3,0);
+
+				//=====================================
+
+				var star = new THREE.Mesh(
+                     new THREE.SphereGeometry(5),
+                     new THREE.MeshBasicMaterial({color: 0xffffff})
+                );
+
+				scene.add(star);
+
+				for (var i = 0; i < 5000; i++) {
+					var s = star.clone();
+					//s.widthSegments = 50;
+					s.position.set(Math.random()*4000-2000, Math.random()*4000-2000, -Math.random()*40000);
+					scene.add(s);
+				};
+
+			}
 
 			//执行
 			var after = new j5.After();
@@ -124,28 +144,80 @@
 				initScene();
 				initLight();
 				after.last(function(){
+
 					initObject();
 
-					var dest = 0;
+					var i = 0;
+
+					var dest = -1;
+
 					var spf = 1000/24;
 
+					var bgldown = false;
+
 					var anm = setInterval(function(){
-						dest = parseInt(-(camera.position.z-1000)/2000);
-						if (dest<15) {
-							var seed = spf/((5800-dest*10)/2000);
-							camera.position.z -= seed;
-							light.position.set(camera.position.x, camera.position.y, camera.position.z);
-							//light2.position.set(texts[dest].x, texts[dest].y, -dest*2000+50);
-							//camera.lookAt({x:texts[dest].x, y:texts[dest].y, z:-dest*2000-500});
-							bg.position.set(camera.position.x, camera.position.y+50, camera.position.z-700);
-							
+						
+						if (dest<txts.length) {
+
+							var cha = camera.position.z - dest*(-2000);
+							var time = 1500;
+
+							if (cha <= 0) {
+								dest++
+								if (dest < txts.length) {
+									var txt = "(๑Ő௰Ő๑)";
+									ccCavCxt.clearRect(0, 0, ccCav.width, ccCav.height);
+									ccCavCxt.fillText(txt, (ccCav.width-ccCavCxt.measureText(txt).width)/2, 62)
+									cc.position.set(txts[dest].x, txts[dest].y, -dest*2000);
+								} else{
+									return;
+								};
+							}else if (cha < 800 && cha > 600 && txts[dest].noSlow != true) {
+								time += 1000;
+							};
+
+							var zSeed = spf/(time/2000);
+							var xSeed = spf/(time/(txts[dest].x-camera.position.x));
+							var ySeed = spf/(time/(txts[dest].y-camera.position.y));
+
+							camera.position.z -= zSeed;
+							camera.position.x += xSeed*5;
+							camera.position.y += ySeed*5;
+
+							//sphere.position.set(camera.position.x, camera.position.y+200, camera.position.z-500);
+							//star.position.set(camera.position.x, camera.position.y, camera.position.z-500);
+
+							light.position.set(camera.position.x, camera.position.y, camera.position.z+50);
+							bg.position.set(0, 0, camera.position.z-3000);
+							light2.position.set(0, 0, camera.position.z-3000+50);
+
+							//if (i % 3 == 0) {
+								if (bgldown == false) {
+									light2.intensity += 0.5;
+									if (light2.intensity == 40) {
+										bgldown = true;
+									};
+								} else{
+									light2.intensity -= 0.5;
+									if (light2.intensity == 20) {
+										bgldown = false;
+									};
+								};
+							//};
+
+							renderer.clear();
 							renderer.render(scene, camera);
-						} else{};
+							
+
+						} else{
+							clearInterval(anm);
+						};
+
+						i++;
 					}, spf);
+
 				});
 			}
-			
-
 			
 
 		</script>
@@ -168,5 +240,6 @@
 	<body onload='threeStart();'>
 		<!--盛放canvas的容器-->
 		<div id="canvas3d"></div>
+		<audio autoplay="autoplay" src="intro-sound.mp3"></audio>
 	</body>
 </html>
