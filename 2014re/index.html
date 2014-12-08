@@ -6,7 +6,6 @@
 		<!--引入Three.js-->
 		<script src="three.min.js"></script>
 		<script src="j5.js"></script>
-		<script src="mlang.js"></script>
 
 		<style type="text/css">
 			body {
@@ -71,52 +70,87 @@
 
 
 			//设置物体
-			var txts = new Array();
+			var objs = new Array();
+			var map = new Object();
 
-			var ccCav = document.createElement("canvas");
-
-			var ccCavCxt = ccCav.getContext("2d");
 			var ft = "Bold 72px 'Segoe UI' 'Lucida Grande' Helvetica Arial 'Microsoft YaHei' FreeSans Arimo 'Droid Sans' 'wenquanyi micro hei' 'Hiragino Sans GB' 'Hiragino Sans GB W3' sans-serif";
 			var tc = "rgba(255,255,255,1)";
 
 			var cc;
 			var bg;
+
+			function addChar (char) {
+				if (!map[char] && char != " "){
+					var ccCav = document.createElement("canvas");
+					var ccCavCxt = ccCav.getContext("2d");
+					ccCavCxt.font = ft;
+					ccCavCxt.fillStyle = tc;
+
+					ccCav.width = ccCavCxt.measureText(char).width
+					ccCav.height = 72;
+					ccCavCxt.font = ft;
+					ccCavCxt.fillStyle = tc;
+					ccCavCxt.shadowBlur = 3;
+					ccCavCxt.shadowColor = "rgba(43,87,151,0.5)"
+
+					ccCavCxt.clearRect(0, 0, ccCav.width, ccCav.height);
+					ccCavCxt.fillText(char, 0, 62);
+
+					var ccTe = new THREE.Texture(ccCav) 
+					ccTe.needsUpdate = true;
+					var ccMl = new THREE.MeshLambertMaterial( {map: ccTe, side:THREE.DoubleSide } );
+					ccMl.transparent = true;
+					var o = new THREE.Mesh(new THREE.PlaneBufferGeometry(ccCav.width, ccCav.height), ccMl)
+					o.position.set(0, 0, 3000);
+					scene.add(o);
+
+					map[char] = {
+						obj: o,
+						width: ccCav.width
+					};
+
+				};
+				
+			}
+
 			function initObject(){
-				ccCavCxt.font = ft;
-				ccCavCxt.fillStyle = tc;
-				ccCav.width = 1024;
-				ccCav.height = 72;
-				ccCavCxt.font = ft;
-				ccCavCxt.fillStyle = tc;
-				ccCavCxt.shadowBlur = 3;
-				ccCavCxt.shadowColor = "rgba(43,87,151,0.5)"
+				var str  = [
+					"生日快乐",
+					"Happy Birthday",
+					"عيد ميلاد سعيد",
+					"З Днём Нараджэння",
+					"생일 축하",
+					"শুভ জন্মদিন",
+					"誕生日おめでとう",
+					"Срећан рођендан",
+					"feliĉa Naskiĝtago",
+					"பிறந்தநாள்",
+					"سالگرہ مبارک",
+					"יום הולדת שמח",
+					"Χρόνια Πολλά",
+					"Chúc mừng sinh nhật",
+					"生日快樂"
+				];
 
-				var ccTe = new THREE.Texture(ccCav) 
-				ccTe.needsUpdate = true;
-				var ccMl = new THREE.MeshLambertMaterial( {map: ccTe, side:THREE.DoubleSide } );
-				ccMl.transparent = true;
-				cc = new THREE.Mesh(new THREE.PlaneBufferGeometry(ccCav.width, ccCav.height), ccMl)
+				objs.push({
+					text: "23",
+					x: 0,
+					y: 0,
+					noSlow: true
+				});
 
-				for (var i = 0; i < 16; i++) {
-					if (i==0) {
-						txts.push({
-							x: 0,
-							y: 0,
-							noSlow: true
-						});
-					}else{
-						txts.push({
-							x: Math.random()*2000-1000,
-							y: Math.random()*2000-1000,
-							noSlow: false
-						});
+				//var len;
+				for (var i = 0; i < str.length; i++) {
+					objs.push({
+						text: str[i],
+						x: Math.random()*2000-1000,
+						y: Math.random()*2000-1000,
+						noSlow: false
+					});
+					for (var y = 0; y < str[i].length; y++) {
+						addChar(str[i][y]);
 					};
 				};
-
-				scene.add(cc);
-
-				//camera.position.x = txts[0].x;
-				//camera.position.y = txts[0].y;
 
 				//==================================================
 
@@ -181,31 +215,51 @@
 					bgm.play();
 					var anm = setInterval(function(){
 						
-						if (dest<txts.length) {
+						if (dest<objs.length) {
 
 							var cha = camera.position.z - dest*(-2000);
 							var time = 1500;
 
 							if (cha <= 0) {
 								dest++
-								if (dest < txts.length) {
-									ccCavCxt.clearRect(0, 0, ccCav.width, ccCav.height);
-									ccCavCxt.fillText(mlang.happyBirthday[dest], (ccCav.width-ccCavCxt.measureText(mlang.happyBirthday[dest]).width)/2, 62);
-									cc.position.set(txts[dest].x, txts[dest].y, -dest*2000);
+								if (dest==0) {
+
+								} else if (dest < objs.length) {
+									var txt = objs[dest].text;
+									var offset = 0;
+									for (var y = 0; y < txt.length; y++) {
+										if (txt[y] == " ") {
+											offset += 30;
+										} else{
+											map[txt[y]].obj.position.set(objs[dest].x+offset, objs[dest].y, -dest*2000);
+											offset += map[txt[y]].width;
+										};
+									};
+
+									for (var y = 0; y < txt.length; y++) {
+										if (txt[y] != " ") {
+											map[txt[y]].obj.position.x -= (offset-map[txt[0]].width)/2;
+										}
+									};
+									
 								} else{
 									return;
 								};
-							}else if (cha < 800 && cha > 600 && txts[dest].noSlow != true) {
-								time += 1000;
+							}else if (objs[dest].noSlow != true) {
+								if (cha < 800 && cha > 600) {
+									time += 1000;
+								} else{
+
+								};
 							};
 
 							var zSeed = spf/(time/2000);
-							var xSeed = spf/(time/(txts[dest].x-camera.position.x));
-							var ySeed = spf/(time/(txts[dest].y-camera.position.y));
+							var xSeed = spf/(time/(objs[dest].x-camera.position.x));
+							var ySeed = spf/(time/(objs[dest].y-camera.position.y));
 
 							camera.position.z -= zSeed;
-							camera.position.x += xSeed*5;
-							camera.position.y += ySeed*5;
+							camera.position.x += xSeed*8;
+							camera.position.y += ySeed*8;
 
 							//sphere.position.set(camera.position.x, camera.position.y+200, camera.position.z-500);
 							//star.position.set(camera.position.x, camera.position.y, camera.position.z-500);
