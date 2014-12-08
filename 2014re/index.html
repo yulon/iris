@@ -62,7 +62,7 @@
 			var light;
 			var Light2;
 			function initLight() {
-				light = new THREE.PointLight(0xffffff, 2, 2000);
+				light = new THREE.PointLight(0xffffff, 2, 1500);
 				scene.add( light );
 				light2 = new THREE.PointLight(0xffffff, 35, 0);
 				scene.add( light2 );
@@ -71,7 +71,6 @@
 
 			//设置物体
 			var objs = new Array();
-			var map = new Object();
 
 			var ft = "Bold 72px 'Segoe UI' 'Lucida Grande' Helvetica Arial 'Microsoft YaHei' FreeSans Arimo 'Droid Sans' 'wenquanyi micro hei' 'Hiragino Sans GB' 'Hiragino Sans GB W3' sans-serif";
 			var tc = "rgba(255,255,255,1)";
@@ -79,53 +78,49 @@
 			var cc;
 			var bg;
 
-			function addChar (char) {
-				if (!map[char] && char != " "){
-					var ccCav = document.createElement("canvas");
-					var ccCavCxt = ccCav.getContext("2d");
-					ccCavCxt.font = ft;
-					ccCavCxt.fillStyle = tc;
-					ccCavCxt.shadowBlur = 3;
-					ccCavCxt.shadowColor = "rgba(43,87,151,0.5)"
+			function getText (text) {
 
-					ccCav.width = ccCavCxt.measureText(char).width
-					ccCav.height = 72;
-					ccCavCxt.font = ft;
-					ccCavCxt.fillStyle = tc;
-					ccCavCxt.shadowBlur = 3;
-					ccCavCxt.shadowColor = "rgba(43,87,151,0.5)"
+				var ccCav = document.createElement("canvas");
+				var ccCavCxt = ccCav.getContext("2d");
+				ccCav.height = 75;
+				ccCavCxt.font = ft;
+				ccCavCxt.shadowBlur = 10;
+				ccCavCxt.shadowColor = "rgba(210,150,210,1)"
 
-					ccCavCxt.clearRect(0, 0, ccCav.width, ccCav.height);
-					ccCavCxt.fillText(char, 0, 62);
+				ccCav.width = ccCavCxt.measureText(text).width+200
+				ccCavCxt.font = ft;
+				ccCavCxt.fillStyle = "rgba(0,0,0,1)";
+				ccCavCxt.shadowBlur = 20;
+				ccCavCxt.shadowColor = "rgba(210,150,210,1)"
 
-					var ccTe = new THREE.Texture(ccCav) 
-					ccTe.needsUpdate = true;
-					var ccMl = new THREE.MeshLambertMaterial( {map: ccTe, side:THREE.DoubleSide } );
-					ccMl.transparent = true;
-					var o = new THREE.Mesh(new THREE.PlaneBufferGeometry(ccCav.width, ccCav.height), ccMl)
-					o.position.set(0, 0, 3000);
-					scene.add(o);
+				ccCavCxt.clearRect(0, 0, ccCav.width, ccCav.height);
+				ccCavCxt.fillText(text, 100, 62);
 
-					map[char] = {
-						obj: o,
-						width: ccCav.width
-					};
+				var ccTe = new THREE.Texture(ccCav) 
+				ccTe.needsUpdate = true;
+				var ccMl = new THREE.MeshLambertMaterial( {map: ccTe, side:THREE.DoubleSide } );
+				ccMl.transparent = true;
+				var o = new THREE.Mesh(new THREE.PlaneBufferGeometry(ccCav.width, ccCav.height), ccMl)
 
+				scene.add(o);
+
+				return {
+					obj: o,
+					width: ccCav.width
 				};
-				
+
 			}
 
 			function getChar (char) {
-				if (!map[char] && char != " "){
+				if (char != " "){
 					var ccCav = document.createElement("canvas");
 					var ccCavCxt = ccCav.getContext("2d");
+					ccCav.height = 75;
 					ccCavCxt.font = ft;
-					ccCavCxt.fillStyle = tc;
 					ccCavCxt.shadowBlur = 3;
 					ccCavCxt.shadowColor = "rgba(43,87,151,0.5)"
 
 					ccCav.width = ccCavCxt.measureText(char).width
-					ccCav.height = 72;
 					ccCavCxt.font = ft;
 					ccCavCxt.fillStyle = tc;
 					ccCavCxt.shadowBlur = 3;
@@ -139,7 +134,7 @@
 					var ccMl = new THREE.MeshLambertMaterial( {map: ccTe, side:THREE.DoubleSide } );
 					ccMl.transparent = true;
 					var o = new THREE.Mesh(new THREE.PlaneBufferGeometry(ccCav.width, ccCav.height), ccMl)
-					o.position.set(0, 0, 3000);
+
 					scene.add(o);
 
 					return {
@@ -153,6 +148,7 @@
 
 			function initObject(){
 				var str  = [
+					"233333",
 					"生日快乐",
 					"Happy Birthday",
 					"عيد ميلاد سعيد",
@@ -170,21 +166,43 @@
 					"生日快樂"
 				];
 
-				objs.push({
-					text: "23",
-					x: 0,
-					y: 0,
-					noSlow: true
-				});
-
 				for (var i = 0; i < str.length; i++) {
-					objs.push({
-						text: str[i],
-						x: Math.random()*2000-1000,
-						y: Math.random()*2000-1000,
-						noSlow: false
-					});
+					if (i == 0) {
+						objs.push({
+							text: getText(str[i]),
+							x: 0,
+							y: 0
+						});
+						objs[i].text.obj.position.set(objs[i].x, objs[i].y, -i*2000);
+
+					}else{
+						objs.push({
+							x: Math.random()*2000-1000,
+							y: Math.random()*2000-1000
+						});
+
+						var offset = 0;
+						objs[i].chars = new Array();
+
+						for (var y = 0; y < str[i].length; y++) {
+							if (str[i][y] == " ") {
+								offset += 30;
+							} else{
+								var char = getChar(str[i][y]);
+								char.obj.position.set(objs[i].x+offset, objs[i].y, -i*2000);
+								offset += char.width;
+								objs[i].chars.push(char);
+							};
+						};
+
+						for (var y = 0; y < objs[i].chars.length; y++) {
+							objs[i].chars[y].obj.position.x -= (offset-objs[i].chars[0].width)/2;
+						};
+					}
+					
 				};
+
+
 
 				//==================================================
 
@@ -256,40 +274,20 @@
 
 							if (cha <= 0) {
 								dest++
-								if (dest==0) {
-
-								} else if (dest < objs.length) {
-									var txt = objs[dest].text;
-									var offset = 0;
-									var chars = new Array();
-
-									for (var y = 0; y < txt.length; y++) {
-										if (txt[y] == " ") {
-											offset += 30;
-										} else{
-											var char = getChar(txt[y]);
-											char.obj.position.set(objs[dest].x+offset, objs[dest].y, -dest*2000);
-											offset += char.width;
-											chars.push(char);
-										};
-									};
-
-									for (var y = 0; y < chars.length; y++) {
-										chars[y].obj.position.x -= (offset-chars[0].width)/2;
-									};
-									
-								} else{
+								if (dest >= objs.length) {
 									return;
 								};
-							}else if (objs[dest].noSlow != true) {
+
+							}else if (objs[dest].chars) {
 								if (cha < 800 && cha > 600) {
 									time += 1000;
-								} else{
+								} else if (cha < 600){
 
 								};
 							};
 
 							var zSeed = spf/(time/2000);
+							
 							var xSeed = spf/(time/(objs[dest].x-camera.position.x));
 							var ySeed = spf/(time/(objs[dest].y-camera.position.y));
 
@@ -297,26 +295,22 @@
 							camera.position.x += xSeed*8;
 							camera.position.y += ySeed*8;
 
-							//sphere.position.set(camera.position.x, camera.position.y+200, camera.position.z-500);
-							//star.position.set(camera.position.x, camera.position.y, camera.position.z-500);
-
 							light.position.set(camera.position.x, camera.position.y, camera.position.z+50);
 							bg.position.set(0, 0, camera.position.z-3000);
 							light2.position.set(0, 0, camera.position.z-3000+50);
 
-							//if (i % 3 == 0) {
-								if (bgldown == false) {
-									light2.intensity += 0.5;
-									if (light2.intensity == 40) {
-										bgldown = true;
-									};
-								} else{
-									light2.intensity -= 0.5;
-									if (light2.intensity == 20) {
-										bgldown = false;
-									};
+							if (bgldown == false) {
+								light2.intensity += 0.5;
+								if (light2.intensity == 40) {
+									bgldown = true;
 								};
-							//};
+							} else{
+								light2.intensity -= 0.5;
+								if (light2.intensity == 20) {
+									bgldown = false;
+								};
+							};
+
 
 							renderer.clear();
 							renderer.render(scene, camera);
