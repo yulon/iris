@@ -104,10 +104,7 @@
 
 				scene.add(o);
 
-				return {
-					obj: o,
-					width: ccCav.width
-				};
+				return o;
 
 			}
 
@@ -138,7 +135,7 @@
 					scene.add(o);
 
 					return {
-						obj: o,
+						char: o,
 						width: ccCav.width
 					};
 
@@ -173,7 +170,7 @@
 							x: 0,
 							y: 0
 						});
-						objs[i].text.obj.position.set(objs[i].x, objs[i].y, -i*2000);
+						objs[i].text.position.set(objs[i].x, objs[i].y, -i*2000);
 
 					}else{
 						objs.push({
@@ -188,20 +185,20 @@
 							if (str[i][y] == " ") {
 								offset += 30;
 							} else{
-								var char = getChar(str[i][y]);
-								char.obj.position.set(objs[i].x+offset, objs[i].y, -i*2000);
-								offset += char.width;
-								objs[i].chars.push(char);
+								var chars = getChar(str[i][y]);
+								chars.char.position.set(objs[i].x+offset, objs[i].y, -i*2000);
+								chars.char.visible = false;
+								offset += chars.width;
+								objs[i].chars.push(chars);
 							};
 						};
 
 						for (var y = 0; y < objs[i].chars.length; y++) {
-							objs[i].chars[y].obj.position.x -= (offset-objs[i].chars[0].width)/2;
+							objs[i].chars[y].char.position.x -= (offset-objs[i].chars[0].width)/2;
 						};
 					}
 					
 				};
-
 
 
 				//==================================================
@@ -276,6 +273,10 @@
 								dest++
 								if (dest >= objs.length) {
 									return;
+								}else{
+									for (var y = 0; y < objs[dest].chars.length; y++) {
+										objs[dest].chars[y].char.visible = true;
+									};
 								};
 
 							}else if (objs[dest].chars) {
