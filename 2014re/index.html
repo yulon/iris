@@ -85,6 +85,8 @@
 					var ccCavCxt = ccCav.getContext("2d");
 					ccCavCxt.font = ft;
 					ccCavCxt.fillStyle = tc;
+					ccCavCxt.shadowBlur = 3;
+					ccCavCxt.shadowColor = "rgba(43,87,151,0.5)"
 
 					ccCav.width = ccCavCxt.measureText(char).width
 					ccCav.height = 72;
@@ -105,6 +107,42 @@
 					scene.add(o);
 
 					map[char] = {
+						obj: o,
+						width: ccCav.width
+					};
+
+				};
+				
+			}
+
+			function getChar (char) {
+				if (!map[char] && char != " "){
+					var ccCav = document.createElement("canvas");
+					var ccCavCxt = ccCav.getContext("2d");
+					ccCavCxt.font = ft;
+					ccCavCxt.fillStyle = tc;
+					ccCavCxt.shadowBlur = 3;
+					ccCavCxt.shadowColor = "rgba(43,87,151,0.5)"
+
+					ccCav.width = ccCavCxt.measureText(char).width
+					ccCav.height = 72;
+					ccCavCxt.font = ft;
+					ccCavCxt.fillStyle = tc;
+					ccCavCxt.shadowBlur = 3;
+					ccCavCxt.shadowColor = "rgba(43,87,151,0.5)"
+
+					ccCavCxt.clearRect(0, 0, ccCav.width, ccCav.height);
+					ccCavCxt.fillText(char, 0, 62);
+
+					var ccTe = new THREE.Texture(ccCav) 
+					ccTe.needsUpdate = true;
+					var ccMl = new THREE.MeshLambertMaterial( {map: ccTe, side:THREE.DoubleSide } );
+					ccMl.transparent = true;
+					var o = new THREE.Mesh(new THREE.PlaneBufferGeometry(ccCav.width, ccCav.height), ccMl)
+					o.position.set(0, 0, 3000);
+					scene.add(o);
+
+					return {
 						obj: o,
 						width: ccCav.width
 					};
@@ -139,7 +177,6 @@
 					noSlow: true
 				});
 
-				//var len;
 				for (var i = 0; i < str.length; i++) {
 					objs.push({
 						text: str[i],
@@ -147,9 +184,6 @@
 						y: Math.random()*2000-1000,
 						noSlow: false
 					});
-					for (var y = 0; y < str[i].length; y++) {
-						addChar(str[i][y]);
-					};
 				};
 
 				//==================================================
@@ -227,19 +261,21 @@
 								} else if (dest < objs.length) {
 									var txt = objs[dest].text;
 									var offset = 0;
+									var chars = new Array();
+
 									for (var y = 0; y < txt.length; y++) {
 										if (txt[y] == " ") {
 											offset += 30;
 										} else{
-											map[txt[y]].obj.position.set(objs[dest].x+offset, objs[dest].y, -dest*2000);
-											offset += map[txt[y]].width;
+											var char = getChar(txt[y]);
+											char.obj.position.set(objs[dest].x+offset, objs[dest].y, -dest*2000);
+											offset += char.width;
+											chars.push(char);
 										};
 									};
 
-									for (var y = 0; y < txt.length; y++) {
-										if (txt[y] != " ") {
-											map[txt[y]].obj.position.x -= (offset-map[txt[0]].width)/2;
-										}
+									for (var y = 0; y < chars.length; y++) {
+										chars[y].obj.position.x -= (offset-chars[0].width)/2;
 									};
 									
 								} else{
