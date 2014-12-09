@@ -1,9 +1,7 @@
-var j5 = {};
-
-j5.After = function(){
+function $After(){
 	this.num = 0;
 
-	this.callback = function(){
+	this.mcb = function(){
 		this.num++;
 		var th1s = this;
 		return function(){
@@ -25,4 +23,4 @@ j5.After = function(){
 			this.lf = f;
 		}
 	};
-};
+}
